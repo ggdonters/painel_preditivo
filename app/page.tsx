@@ -250,7 +250,7 @@ export default function Page() {
   React.useEffect(() => {
     applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [obraFilter, obraSortMode, activeSort]);
+  }, [obraFilter, obraSortMode, activeSort, riskMin, riskMax, riskPreset]);
 
   // compute a safe style for the portal dropdown (keep inside viewport)
   const portalStyle = React.useMemo(() => {
@@ -452,6 +452,26 @@ export default function Page() {
         >
           <ArrowDownUp size={16} className="mr-2" />
           Mais Urgente
+        </button>
+        
+        {/* Clear filters button aligned to the right */}
+        <button
+          type="button"
+          onClick={() => {
+            setObraFilter("all");
+            setObraSortMode("none");
+            setObraDropdownOpen(false);
+            setActiveSort("none");
+            setRiskMin(null);
+            setRiskMax(null);
+            setRiskPreset(null);
+            setRiskDropdownOpen(false);
+            // applyFilters will re-run via effect
+          }}
+          aria-label="Limpar filtros"
+          className="ml-auto flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+        >
+          Limpar filtros
         </button>
       </div>
 
