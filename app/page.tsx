@@ -141,11 +141,22 @@ export default function Page() {
   const obraDropdownRef = React.useRef<HTMLDivElement | null>(null);
   const obraButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const [dropdownCoords, setDropdownCoords] = React.useState<{ top: number; left: number; width: number } | null>(null);
+  // Risk dropdown state and refs
+  const [riskDropdownOpen, setRiskDropdownOpen] = React.useState(false);
+  const riskButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const [riskDropdownCoords, setRiskDropdownCoords] = React.useState<{ top: number; left: number; width: number } | null>(null);
+  const [riskMin, setRiskMin] = React.useState<number | null>(null);
+  const [riskMax, setRiskMax] = React.useState<number | null>(null);
+  const [riskPreset, setRiskPreset] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (obraDropdownRef.current && !obraDropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (obraDropdownRef.current && !obraDropdownRef.current.contains(target)) {
         setObraDropdownOpen(false);
+      }
+      if (riskDropdownOpen && riskButtonRef.current && !riskButtonRef.current.contains(target) && !(document.getElementById('risk-dropdown')?.contains(target))) {
+        setRiskDropdownOpen(false);
       }
     }
     document.addEventListener("click", onDocClick);
@@ -169,6 +180,23 @@ export default function Page() {
       window.removeEventListener("scroll", update);
     };
   }, [obraDropdownOpen]);
+
+  // risk dropdown positioning
+  React.useEffect(() => {
+    function update() {
+      if (riskButtonRef.current) {
+        const rect = riskButtonRef.current.getBoundingClientRect();
+        setRiskDropdownCoords({ top: rect.bottom, left: rect.left, width: rect.width });
+      }
+    }
+    if (riskDropdownOpen) update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update);
+    };
+  }, [riskDropdownOpen]);
 
 
   function parseDays(risco: string) {
@@ -205,6 +233,15 @@ export default function Page() {
       result.sort((a, b) => b.prob - a.prob);
     } else if (activeSort === "urgent") {
       result.sort((a, b) => parseDays(a.risco) - parseDays(b.risco));
+    }
+
+    // apply risk range filter if set
+    if (riskMin !== null || riskMax !== null) {
+      result = result.filter((r) => {
+        const minOk = riskMin === null ? true : r.prob >= riskMin;
+        const maxOk = riskMax === null ? true : r.prob <= riskMax;
+        return minOk && maxOk;
+      });
     }
 
     setDisplayedRows(result);
@@ -312,15 +349,101 @@ export default function Page() {
             document.body
           )}
         </div>
+        <div className="relative">
+          <button
+            ref={riskButtonRef}
+            type="button"
+            onClick={() => {
+              if (riskButtonRef.current) {
+                const rect = riskButtonRef.current.getBoundingClientRect();
+                setRiskDropdownCoords({ top: rect.bottom, left: rect.left, width: rect.width });
+              }
+              setRiskDropdownOpen((s) => !s);
+            }}
+            className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${riskMin !== null || riskMax !== null ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
+          >
+            <ArrowDownUp size={16} className="mr-2" />
+            Maior Risco
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveSort((prev) => (prev === "risk" ? "none" : "risk"))}
-          className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${activeSort === "risk" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
-        >
-          <ArrowDownUp size={16} className="mr-2" />
-          Maior Risco
-        </button>
+          {riskDropdownOpen && riskDropdownCoords && createPortal(
+            <div id="risk-dropdown" style={{ position: 'fixed', top: Math.min(Math.max(riskDropdownCoords.top + 8, 8), window.innerHeight - 40), left: Math.min(Math.max(riskDropdownCoords.left, 8), Math.max(window.innerWidth - 272 - 8, 8)) }} className="z-50">
+              <div className="w-64 bg-white text-gray-900 shadow-lg rounded-xl border border-gray-100 ring-1 ring-black/5 max-h-72 overflow-y-auto">
+                <div className="px-4 py-3 border-b">
+                  <p className="text-xs font-semibold mb-2 text-gray-900">Intervalos Risco</p>
+                  <div className="grid grid-cols-1 gap-1">
+                    {/* presets: 0-20, 20-40, 40-60, 60-80, 80-90, 90-95, 95-97.5, 97.5-100 */}
+                    {[
+                      { key: '0-20', label: '0 - 20%', min: 0, max: 20 },
+                      { key: '20-40', label: '20 - 40%', min: 20, max: 40 },
+                      { key: '40-60', label: '40 - 60%', min: 40, max: 60 },
+                      { key: '60-80', label: '60 - 80%', min: 60, max: 80 },
+                      { key: '80-90', label: '80 - 90%', min: 80, max: 90 },
+                      { key: '90-95', label: '90 - 95%', min: 90, max: 95 },
+                      { key: '95-975', label: '95 - 97.5%', min: 95, max: 97.5 },
+                      { key: '975-100', label: '97.5 - 100%', min: 97.5, max: 100 },
+                    ].map((p) => (
+                      <button
+                        key={p.key}
+                        type="button"
+                        onClick={() => { setRiskMin(p.min); setRiskMax(p.max); setRiskPreset(p.key); setRiskDropdownOpen(false); }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="px-4 py-3 border-b">
+                  <p className="text-xs font-semibold mb-2 text-gray-900">Customizar intervalo</p>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      aria-label="minimo risco"
+                      value={riskMin ?? ''}
+                      onChange={(e) => setRiskMin(e.target.value === '' ? null : parseFloat(e.target.value))}
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      max={100}
+                      className="w-1/2 px-3 py-2 border rounded-md text-sm"
+                      placeholder="mín %"
+                    />
+                    <span className="text-sm">até</span>
+                    <input
+                      aria-label="maximo risco"
+                      value={riskMax ?? ''}
+                      onChange={(e) => setRiskMax(e.target.value === '' ? null : parseFloat(e.target.value))}
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      max={100}
+                      className="w-1/2 px-3 py-2 border rounded-md text-sm"
+                      placeholder="máx %"
+                    />
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setRiskPreset('custom'); setRiskDropdownOpen(false); }}
+                      className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm"
+                    >
+                      Aplicar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setRiskMin(null); setRiskMax(null); setRiskPreset(null); setRiskDropdownOpen(false); }}
+                      className="px-3 py-2 bg-white border rounded-md text-sm"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+        </div>
 
         <button
           type="button"
