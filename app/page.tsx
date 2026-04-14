@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { createPortal } from "react-dom";
 import {
   AlertTriangle,
   DollarSign,
@@ -138,6 +139,8 @@ export default function Page() {
   const uniqueObras = Array.from(new Set(initialRows.map((r) => r.obra)));
 
   const obraDropdownRef = React.useRef<HTMLDivElement | null>(null);
+  const obraButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const [dropdownCoords, setDropdownCoords] = React.useState<{ top: number; left: number; width: number } | null>(null);
 
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -148,6 +151,23 @@ export default function Page() {
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
   }, []);
+
+  // update dropdown position when opened or on resize/scroll
+  React.useEffect(() => {
+    function update() {
+      if (obraButtonRef.current) {
+        const rect = obraButtonRef.current.getBoundingClientRect();
+        setDropdownCoords({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+      }
+    }
+    if (obraDropdownOpen) update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update);
+    };
+  }, [obraDropdownOpen]);
 
 
   function parseDays(risco: string) {
@@ -202,8 +222,15 @@ export default function Page() {
   <div className="flex gap-3 overflow-x-auto overflow-y-visible mb-4 items-center">
         <div className="relative" ref={obraDropdownRef}>
           <button
+            ref={obraButtonRef}
             type="button"
-            onClick={() => setObraDropdownOpen((s) => !s)}
+            onClick={() => {
+              if (obraButtonRef.current) {
+                const rect = obraButtonRef.current.getBoundingClientRect();
+                setDropdownCoords({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+              }
+              setObraDropdownOpen((s) => !s);
+            }}
             className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${obraFilter !== "all" || obraSortMode !== "none" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
           >
             <Filter size={16} className="mr-2" />
@@ -211,65 +238,68 @@ export default function Page() {
             <ChevronDown size={14} className="ml-2" />
           </button>
 
-          {obraDropdownOpen && (
-            <div className="absolute z-10 mt-2 right-0 w-64 bg-white shadow-xl rounded-xl border">
-              <div className="p-3 border-b">
-                <p className="text-xs font-semibold mb-2">Ordem Alfabética</p>
-                <button
-                  type="button"
-                  onClick={() => { setObraSortMode("az"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                  className="w-full text-left p-3 hover:bg-gray-50"
-                >
-                  A-Z
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setObraSortMode("za"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                  className="w-full text-left p-3 hover:bg-gray-50"
-                >
-                  Z-A
-                </button>
-              </div>
-
-              <div className="p-3 border-b">
-                <p className="text-xs font-semibold mb-2">Frequência de Obra</p>
-                <button
-                  type="button"
-                  onClick={() => { setObraSortMode("most"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                  className="w-full text-left p-3 hover:bg-gray-50"
-                >
-                  Mais itens (Obra)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setObraSortMode("least"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                  className="w-full text-left p-3 hover:bg-gray-50"
-                >
-                  Menos itens (Obra)
-                </button>
-              </div>
-
-              <div className="p-3">
-                <p className="text-xs font-semibold mb-2">Selecionar Obra</p>
-                <button
-                  type="button"
-                  onClick={() => { setObraFilter("all"); setObraSortMode("none"); setObraDropdownOpen(false); }}
-                  className="w-full text-left p-3 hover:bg-gray-50"
-                >
-                  Todos
-                </button>
-                {uniqueObras.map((o) => (
+          {obraDropdownOpen && dropdownCoords && createPortal(
+            <div style={{ position: "absolute", top: dropdownCoords.top, left: dropdownCoords.left + dropdownCoords.width - 256 }} className="z-50">
+              <div className="w-64 bg-white shadow-xl rounded-xl border">
+                <div className="p-3 border-b">
+                  <p className="text-xs font-semibold mb-2">Ordem Alfabética</p>
                   <button
-                    key={o}
                     type="button"
-                    onClick={() => { setObraFilter(o); setObraSortMode("none"); setObraDropdownOpen(false); }}
+                    onClick={() => { setObraSortMode("az"); setObraFilter("all"); setObraDropdownOpen(false); }}
                     className="w-full text-left p-3 hover:bg-gray-50"
                   >
-                    {o}
+                    A-Z
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => { setObraSortMode("za"); setObraFilter("all"); setObraDropdownOpen(false); }}
+                    className="w-full text-left p-3 hover:bg-gray-50"
+                  >
+                    Z-A
+                  </button>
+                </div>
+
+                <div className="p-3 border-b">
+                  <p className="text-xs font-semibold mb-2">Frequência de Obra</p>
+                  <button
+                    type="button"
+                    onClick={() => { setObraSortMode("most"); setObraFilter("all"); setObraDropdownOpen(false); }}
+                    className="w-full text-left p-3 hover:bg-gray-50"
+                  >
+                    Mais itens (Obra)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setObraSortMode("least"); setObraFilter("all"); setObraDropdownOpen(false); }}
+                    className="w-full text-left p-3 hover:bg-gray-50"
+                  >
+                    Menos itens (Obra)
+                  </button>
+                </div>
+
+                <div className="p-3">
+                  <p className="text-xs font-semibold mb-2">Selecionar Obra</p>
+                  <button
+                    type="button"
+                    onClick={() => { setObraFilter("all"); setObraSortMode("none"); setObraDropdownOpen(false); }}
+                    className="w-full text-left p-3 hover:bg-gray-50"
+                  >
+                    Todos
+                  </button>
+                  {uniqueObras.map((o) => (
+                    <button
+                      key={o}
+                      type="button"
+                      onClick={() => { setObraFilter(o); setObraSortMode("none"); setObraDropdownOpen(false); }}
+                      className="w-full text-left p-3 hover:bg-gray-50"
+                    >
+                      {o}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
 
