@@ -198,8 +198,8 @@ export default function Page() {
     <main className="min-h-screen bg-gray-50 p-6">
   <h1 className="text-xl sm:text-2xl font-semibold leading-relaxed text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
 
-      {/* Filter bar */}
-      <div className="flex gap-3 overflow-x-auto mb-4 items-center">
+  {/* Filter bar */}
+  <div className="flex gap-3 overflow-x-auto overflow-y-visible mb-4 items-center">
         <div className="relative" ref={obraDropdownRef}>
           <button
             type="button"
