@@ -18,10 +18,10 @@ type StatCardProps = {
 
 function StatCard({ title, value, valueClass = "text-gray-800", bgClass = "bg-gray-100", Icon }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-5 flex items-center justify-between border">
+    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 flex items-center justify-between border">
       <div>
-        <p className="text-sm text-gray-500">{title}</p>
-        <h2 className={`text-2xl font-bold mt-1 ${valueClass}`}>{value}</h2>
+        <p className="text-xs sm:text-sm text-gray-500">{title}</p>
+        <h2 className={`text-xl sm:text-2xl font-bold mt-1 ${valueClass}`}>{value}</h2>
       </div>
       <div className={`${bgClass} p-3 rounded-xl`} aria-hidden>
         <Icon className={`${valueClass}`} size={24} />
@@ -43,13 +43,13 @@ type AlertRow = {
 function AlertRowItem({ row }: { row: AlertRow }) {
   return (
     <tr className={`hover:bg-gray-50 ${row.id ? "" : ""}`}>
-  <td className="py-4 align-top max-w-xs truncate text-gray-800">{row.item}</td>
-  <td className="align-top text-gray-800">{row.obra}</td>
-      <td className="text-gray-700 align-top">{row.risco}</td>
-      <td className={`font-semibold align-top ${row.prob >= 90 ? "text-red-600" : row.prob >= 75 ? "text-yellow-600" : "text-green-600"}`}>
+      <td className="py-4 px-4 sm:px-6 align-top max-w-xs truncate text-gray-800 whitespace-nowrap">{row.item}</td>
+      <td className="py-4 px-4 sm:px-6 align-top text-gray-800 whitespace-nowrap">{row.obra}</td>
+      <td className="py-4 px-4 sm:px-6 text-gray-700 align-top whitespace-nowrap">{row.risco}</td>
+      <td className={`py-4 px-4 sm:px-6 font-semibold align-top ${row.prob >= 90 ? "text-red-600" : row.prob >= 75 ? "text-yellow-600" : "text-green-600"}`}>
         {row.prob}%
       </td>
-      <td className="text-right align-top">
+      <td className="py-4 px-4 sm:px-6 text-right align-top">
         <button
           type="button"
           aria-label={row.actionLabel}
@@ -124,7 +124,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
+      <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {stats.map((s) => (
@@ -138,14 +138,15 @@ export default function Page() {
         </h2>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
+          <div className="min-w-[700px]">
+            <table className="w-full text-xs sm:text-sm text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="text-gray-500 border-b">
-                <th scope="col" className="py-3">Item</th>
-                <th scope="col" className="py-3">Obra</th>
-                <th scope="col" className="py-3">Risco</th>
-                <th scope="col" className="py-3">Probabilidade</th>
-                <th scope="col" className="py-3 text-right">Ação</th>
+                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Item</th>
+                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Obra</th>
+                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Risco</th>
+                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Probabilidade</th>
+                <th scope="col" className="py-3 px-4 sm:px-6 text-right whitespace-nowrap">Ação</th>
               </tr>
             </thead>
             <tbody>
@@ -156,6 +157,7 @@ export default function Page() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </section>
     </main>
