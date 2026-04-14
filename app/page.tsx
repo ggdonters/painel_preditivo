@@ -137,7 +137,35 @@ export default function Page() {
           Alertas de Ruptura de Estoque
         </h2>
 
-        <div className="overflow-x-auto">
+        {/* Mobile: lista de cards (mobile-first). Desktop (md+) mostra a tabela */}
+        <div className="md:hidden space-y-4">
+          {rows.map((r) => (
+            <div key={r.id} className="bg-white rounded-2xl shadow-sm border p-4 sm:p-5">
+              <div className="flex items-start justify-between">
+                <div className="pr-4">
+                  <p className="text-sm font-semibold text-gray-800">{r.item}</p>
+                  <p className="text-xs text-gray-600">{r.obra}</p>
+                  <p className="text-xs text-gray-600">{r.risco}</p>
+                </div>
+                <div className={`text-sm font-semibold ${r.prob >= 90 ? "text-red-600" : r.prob >= 75 ? "text-yellow-600" : "text-green-600"}`}>
+                  {r.prob}%
+                </div>
+              </div>
+              <div className="mt-4">
+                <button
+                  type="button"
+                  aria-label={r.actionLabel}
+                  className={`w-full px-4 py-2 rounded-lg text-sm transition ${r.danger ? "bg-red-600 text-white hover:bg-red-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                >
+                  {r.actionLabel}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop/tablet: mostrar tabela a partir de md */}
+        <div className="hidden md:block overflow-x-auto">
           <div className="min-w-[700px]">
             <table className="w-full text-xs sm:text-sm text-left border-collapse min-w-[700px]">
             <thead>
