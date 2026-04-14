@@ -277,6 +277,8 @@ export default function Page() {
                 setDropdownCoords({ top: rect.bottom, left: rect.left, width: rect.width });
               }
               setObraDropdownOpen((s) => !s);
+                // ensure other dropdowns are closed to avoid overlap
+                setRiskDropdownOpen(false);
             }}
             className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${obraFilter !== "all" || obraSortMode !== "none" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
           >
@@ -359,6 +361,8 @@ export default function Page() {
                 setRiskDropdownCoords({ top: rect.bottom, left: rect.left, width: rect.width });
               }
               setRiskDropdownOpen((s) => !s);
+              // close obra dropdown when opening risk dropdown to avoid overlap
+              setObraDropdownOpen(false);
             }}
             className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${riskMin !== null || riskMax !== null ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
           >
