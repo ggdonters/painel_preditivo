@@ -1,65 +1,163 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React from "react";
+import {
+  AlertTriangle,
+  DollarSign,
+  ShoppingCart,
+} from "lucide-react";
+
+type StatCardProps = {
+  id: string;
+  title: string;
+  value: string | number;
+  valueClass?: string;
+  bgClass?: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+};
+
+function StatCard({ title, value, valueClass = "text-gray-800", bgClass = "bg-gray-100", Icon }: StatCardProps) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="bg-white rounded-2xl shadow-sm p-5 flex items-center justify-between border">
+      <div>
+        <p className="text-sm text-gray-500">{title}</p>
+        <h2 className={`text-2xl font-bold mt-1 ${valueClass}`}>{value}</h2>
+      </div>
+      <div className={`${bgClass} p-3 rounded-xl`} aria-hidden>
+        <Icon className={`${valueClass}`} size={24} />
+      </div>
     </div>
+  );
+}
+
+type AlertRow = {
+  id: string;
+  item: string;
+  obra: string;
+  risco: string;
+  prob: number;
+  actionLabel: string;
+  danger?: boolean;
+};
+
+function AlertRowItem({ row }: { row: AlertRow }) {
+  return (
+    <tr className={`hover:bg-gray-50 ${row.id ? "" : ""}`}>
+  <td className="py-4 align-top max-w-xs truncate text-gray-800">{row.item}</td>
+  <td className="align-top text-gray-800">{row.obra}</td>
+      <td className="text-gray-700 align-top">{row.risco}</td>
+      <td className={`font-semibold align-top ${row.prob >= 90 ? "text-red-600" : row.prob >= 75 ? "text-yellow-600" : "text-green-600"}`}>
+        {row.prob}%
+      </td>
+      <td className="text-right align-top">
+        <button
+          type="button"
+          aria-label={row.actionLabel}
+          className={`px-4 py-2 rounded-lg text-sm transition ${row.danger ? "bg-red-600 text-white hover:bg-red-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+        >
+          {row.actionLabel}
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+export default function Page() {
+  const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+  const stats: StatCardProps[] = [
+    {
+      id: "critical",
+      title: "Itens em Risco Crítico",
+      value: 3,
+      valueClass: "text-red-600",
+      bgClass: "bg-red-100",
+      Icon: AlertTriangle,
+    },
+    {
+      id: "economia",
+      title: "Economia Projetada (MRO)",
+      value: currency.format(4500),
+      valueClass: "text-green-600",
+      bgClass: "bg-green-100",
+      Icon: DollarSign,
+    },
+    {
+      id: "pedidos",
+      title: "Pedidos Pendentes",
+      value: 2,
+      valueClass: "text-yellow-600",
+      bgClass: "bg-yellow-100",
+      Icon: ShoppingCart,
+    },
+  ];
+
+  const rows: AlertRow[] = [
+    {
+      id: "r1",
+      item: "Luva de Raspa Cano Curto",
+      obra: "Residencial Altos",
+      risco: "Falta em 4 dias",
+      prob: 92,
+      actionLabel: "Aprovar Reposição",
+      danger: false,
+    },
+    {
+      id: "r2",
+      item: "Capacete de Segurança",
+      obra: "Torre Norte",
+      risco: "Falta em 7 dias",
+      prob: 78,
+      actionLabel: "Aprovar Reposição",
+      danger: false,
+    },
+    {
+      id: "r3",
+      item: "Bota de Segurança (Nº 42)",
+      obra: "Residencial Altos",
+      risco: "Falta em 2 dias",
+      prob: 98,
+      actionLabel: "Reposição Urgente",
+      danger: true,
+    },
+  ];
+
+  return (
+    <main className="min-h-screen bg-gray-50 p-6">
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {stats.map((s) => (
+          <StatCard key={s.id} {...s} />
+        ))}
+      </div>
+
+      <section className="bg-white rounded-2xl shadow-sm border p-6" aria-labelledby="alerts-heading">
+        <h2 id="alerts-heading" className="text-lg font-semibold text-gray-800 mb-4">
+          Alertas de Ruptura de Estoque
+        </h2>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr className="text-gray-500 border-b">
+                <th scope="col" className="py-3">Item</th>
+                <th scope="col" className="py-3">Obra</th>
+                <th scope="col" className="py-3">Risco</th>
+                <th scope="col" className="py-3">Probabilidade</th>
+                <th scope="col" className="py-3 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <React.Fragment key={r.id}>
+                  <AlertRowItem row={r} />
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   );
 }
