@@ -18,7 +18,7 @@ type StatCardProps = {
 
 function StatCard({ title, value, valueClass = "text-gray-800", bgClass = "bg-gray-100", Icon }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 flex items-center justify-between border">
+    <div className="bg-white rounded-2xl shadow-sm p-8 flex items-center justify-between border">
       <div>
         <p className="text-xs sm:text-sm text-gray-500">{title}</p>
         <h2 className={`text-xl sm:text-2xl font-bold mt-1 ${valueClass}`}>{value}</h2>
@@ -43,13 +43,13 @@ type AlertRow = {
 function AlertRowItem({ row }: { row: AlertRow }) {
   return (
     <tr className={`hover:bg-gray-50 ${row.id ? "" : ""}`}>
-      <td className="py-4 px-4 sm:px-6 align-top max-w-xs truncate text-gray-800 whitespace-nowrap">{row.item}</td>
-      <td className="py-4 px-4 sm:px-6 align-top text-gray-800 whitespace-nowrap">{row.obra}</td>
-      <td className="py-4 px-4 sm:px-6 text-gray-700 align-top whitespace-nowrap">{row.risco}</td>
-      <td className={`py-4 px-4 sm:px-6 font-semibold align-top ${row.prob >= 90 ? "text-red-600" : row.prob >= 75 ? "text-yellow-600" : "text-green-600"}`}>
+      <td className="py-6 px-8 align-top max-w-xs truncate text-gray-800 whitespace-nowrap">{row.item}</td>
+      <td className="py-6 px-8 align-top text-gray-800 whitespace-nowrap">{row.obra}</td>
+      <td className="py-6 px-8 text-gray-700 align-top whitespace-nowrap">{row.risco}</td>
+      <td className={`py-6 px-8 font-semibold align-top ${row.prob >= 90 ? "text-red-600" : row.prob >= 75 ? "text-yellow-600" : "text-green-600"}`}>
         {row.prob}%
       </td>
-      <td className="py-4 px-4 sm:px-6 text-right align-top">
+      <td className="py-6 px-8 text-right align-top">
         <button
           type="button"
           aria-label={row.actionLabel}
@@ -124,9 +124,9 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
-      <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
+  <h1 className="text-xl sm:text-2xl font-semibold leading-relaxed text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         {stats.map((s) => (
           <StatCard key={s.id} {...s} />
         ))}
@@ -138,14 +138,14 @@ export default function Page() {
         </h2>
 
         {/* Mobile: lista de cards (mobile-first). Desktop (md+) mostra a tabela */}
-        <div className="md:hidden space-y-4">
+        <div className="md:hidden space-y-6">
           {rows.map((r) => (
-            <div key={r.id} className="bg-white rounded-2xl shadow-sm border p-4 sm:p-5">
+            <div key={r.id} className="bg-white rounded-2xl shadow-sm border p-8">
               <div className="flex items-start justify-between">
                 <div className="pr-4">
-                  <p className="text-sm font-semibold text-gray-800">{r.item}</p>
-                  <p className="text-xs text-gray-600">{r.obra}</p>
-                  <p className="text-xs text-gray-600">{r.risco}</p>
+                  <p className="text-sm font-semibold text-gray-800 mb-4">{r.item}</p>
+                  <p className="text-xs text-gray-600 mb-4">{r.obra}</p>
+                  <p className="text-xs text-gray-600 mb-4">{r.risco}</p>
                 </div>
                 <div className={`text-sm font-semibold ${r.prob >= 90 ? "text-red-600" : r.prob >= 75 ? "text-yellow-600" : "text-green-600"}`}>
                   {r.prob}%
@@ -166,15 +166,15 @@ export default function Page() {
 
         {/* Desktop/tablet: mostrar tabela a partir de md */}
         <div className="hidden md:block overflow-x-auto">
-          <div className="min-w-[700px]">
-            <table className="w-full text-xs sm:text-sm text-left border-collapse min-w-[700px]">
+          <div className="min-w-[850px]">
+            <table className="w-full text-xs sm:text-sm text-left border-collapse min-w-[850px]">
             <thead>
               <tr className="text-gray-500 border-b">
-                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Item</th>
-                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Obra</th>
-                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Risco</th>
-                <th scope="col" className="py-3 px-4 sm:px-6 whitespace-nowrap">Probabilidade</th>
-                <th scope="col" className="py-3 px-4 sm:px-6 text-right whitespace-nowrap">Ação</th>
+                <th scope="col" className="py-6 px-8 whitespace-nowrap">Item</th>
+                <th scope="col" className="py-6 px-8 whitespace-nowrap">Obra</th>
+                <th scope="col" className="py-6 px-8 whitespace-nowrap">Risco</th>
+                <th scope="col" className="py-6 px-8 whitespace-nowrap">Probabilidade</th>
+                <th scope="col" className="py-6 px-8 text-right whitespace-nowrap">Ação</th>
               </tr>
             </thead>
             <tbody>
