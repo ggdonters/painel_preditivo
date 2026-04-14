@@ -157,7 +157,8 @@ export default function Page() {
     function update() {
       if (obraButtonRef.current) {
         const rect = obraButtonRef.current.getBoundingClientRect();
-        setDropdownCoords({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+        // store viewport-relative coordinates (use fixed positioning later)
+        setDropdownCoords({ top: rect.bottom, left: rect.left, width: rect.width });
       }
     }
     if (obraDropdownOpen) update();
@@ -214,6 +215,15 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [obraFilter, obraSortMode, activeSort]);
 
+  // compute a safe style for the portal dropdown (keep inside viewport)
+  const portalStyle = React.useMemo(() => {
+    if (!dropdownCoords) return undefined;
+    const maxWidth = 272; // 64 * 4 + some gap
+    const left = Math.min(Math.max(dropdownCoords.left, 8), Math.max(window.innerWidth - maxWidth - 8, 8));
+    const top = Math.min(Math.max(dropdownCoords.top + 8, 8), window.innerHeight - 40);
+    return { position: "fixed" as const, top, left };
+  }, [dropdownCoords]);
+
   return (
     <main className="min-h-screen bg-gray-50 p-6">
   <h1 className="text-xl sm:text-2xl font-semibold leading-relaxed text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
@@ -227,7 +237,7 @@ export default function Page() {
             onClick={() => {
               if (obraButtonRef.current) {
                 const rect = obraButtonRef.current.getBoundingClientRect();
-                setDropdownCoords({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+                setDropdownCoords({ top: rect.bottom, left: rect.left, width: rect.width });
               }
               setObraDropdownOpen((s) => !s);
             }}
@@ -239,50 +249,50 @@ export default function Page() {
           </button>
 
           {obraDropdownOpen && dropdownCoords && createPortal(
-            <div style={{ position: "absolute", top: dropdownCoords.top, left: dropdownCoords.left + dropdownCoords.width - 256 }} className="z-50">
-              <div className="w-64 bg-white shadow-xl rounded-xl border">
-                <div className="p-3 border-b">
-                  <p className="text-xs font-semibold mb-2">Ordem Alfabética</p>
+            <div style={portalStyle}>
+              <div className="w-64 bg-white text-gray-900 shadow-lg rounded-xl border border-gray-100 ring-1 ring-black/5 max-h-72 overflow-y-auto">
+                <div className="px-4 py-3 border-b">
+                  <p className="text-xs font-semibold mb-2 text-gray-900">Ordem Alfabética</p>
                   <button
                     type="button"
                     onClick={() => { setObraSortMode("az"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                    className="w-full text-left p-3 hover:bg-gray-50"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                   >
                     A-Z
                   </button>
                   <button
                     type="button"
                     onClick={() => { setObraSortMode("za"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                    className="w-full text-left p-3 hover:bg-gray-50"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                   >
                     Z-A
                   </button>
                 </div>
 
-                <div className="p-3 border-b">
-                  <p className="text-xs font-semibold mb-2">Frequência de Obra</p>
+                <div className="px-4 py-3 border-b">
+                  <p className="text-xs font-semibold mb-2 text-gray-900">Frequência de Obra</p>
                   <button
                     type="button"
                     onClick={() => { setObraSortMode("most"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                    className="w-full text-left p-3 hover:bg-gray-50"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                   >
                     Mais itens (Obra)
                   </button>
                   <button
                     type="button"
                     onClick={() => { setObraSortMode("least"); setObraFilter("all"); setObraDropdownOpen(false); }}
-                    className="w-full text-left p-3 hover:bg-gray-50"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                   >
                     Menos itens (Obra)
                   </button>
                 </div>
 
-                <div className="p-3">
-                  <p className="text-xs font-semibold mb-2">Selecionar Obra</p>
+                <div className="px-4 py-3">
+                  <p className="text-xs font-semibold mb-2 text-gray-900">Selecionar Obra</p>
                   <button
                     type="button"
                     onClick={() => { setObraFilter("all"); setObraSortMode("none"); setObraDropdownOpen(false); }}
-                    className="w-full text-left p-3 hover:bg-gray-50"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                   >
                     Todos
                   </button>
@@ -291,7 +301,7 @@ export default function Page() {
                       key={o}
                       type="button"
                       onClick={() => { setObraFilter(o); setObraSortMode("none"); setObraDropdownOpen(false); }}
-                      className="w-full text-left p-3 hover:bg-gray-50"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                     >
                       {o}
                     </button>
