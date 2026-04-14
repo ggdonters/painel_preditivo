@@ -258,14 +258,14 @@ export default function Page() {
                     onClick={() => { setObraSortMode("az"); setObraFilter("all"); setObraDropdownOpen(false); }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                   >
-                    A-Z
+                      A - Z
                   </button>
                   <button
                     type="button"
                     onClick={() => { setObraSortMode("za"); setObraFilter("all"); setObraDropdownOpen(false); }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50"
                   >
-                    Z-A
+                    Z - A
                   </button>
                 </div>
 
