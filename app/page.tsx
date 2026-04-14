@@ -7,6 +7,7 @@ import {
   ShoppingCart,
   Filter,
   ArrowDownUp,
+  ChevronDown,
 } from "lucide-react";
 
 type StatCardProps = {
@@ -129,7 +130,25 @@ export default function Page() {
   const [obraFilter, setObraFilter] = React.useState<string>("all");
   const [activeSort, setActiveSort] = React.useState<"none" | "risk" | "urgent">("none");
 
+  // Por Obra dropdown state
+  const [obraDropdownOpen, setObraDropdownOpen] = React.useState(false);
+  const [obraSortMode, setObraSortMode] = React.useState<"none" | "az" | "za" | "most" | "least">("none");
+
   const obraOptions = ["all", "Residencial Altos", "Torre Norte"];
+  const uniqueObras = Array.from(new Set(initialRows.map((r) => r.obra)));
+
+  const obraDropdownRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (obraDropdownRef.current && !obraDropdownRef.current.contains(e.target as Node)) {
+        setObraDropdownOpen(false);
+      }
+    }
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, []);
+
 
   function parseDays(risco: string) {
     const m = risco.match(/(\d+)/);
@@ -139,10 +158,28 @@ export default function Page() {
   function applyFilters() {
     let result = [...initialRows];
 
+    // filter by obra if selected
     if (obraFilter !== "all") {
       result = result.filter((r) => r.obra === obraFilter);
     }
 
+    // obra sort modes
+    if (obraSortMode === "az") {
+      result.sort((a, b) => a.item.localeCompare(b.item));
+    } else if (obraSortMode === "za") {
+      result.sort((a, b) => b.item.localeCompare(a.item));
+    } else if (obraSortMode === "most" || obraSortMode === "least") {
+      const counts = result.reduce<Record<string, number>>((acc, cur) => {
+        acc[cur.obra] = (acc[cur.obra] || 0) + 1;
+        return acc;
+      }, {});
+      result.sort((a, b) => {
+        const diff = (counts[b.obra] || 0) - (counts[a.obra] || 0);
+        return obraSortMode === "most" ? diff : -diff;
+      });
+    }
+
+    // other sorts (risk/urgent) apply after obra sorts
     if (activeSort === "risk") {
       result.sort((a, b) => b.prob - a.prob);
     } else if (activeSort === "urgent") {
@@ -155,26 +192,86 @@ export default function Page() {
   React.useEffect(() => {
     applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [obraFilter, activeSort]);
+  }, [obraFilter, obraSortMode, activeSort]);
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
   <h1 className="text-xl sm:text-2xl font-semibold leading-relaxed text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
 
       {/* Filter bar */}
-      <div className="flex gap-3 overflow-x-auto mb-4">
-        <button
-          type="button"
-          onClick={() => setObraFilter((prev) => {
-            const idx = obraOptions.indexOf(prev);
-            const next = obraOptions[(idx + 1) % obraOptions.length];
-            return next;
-          })}
-          className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${obraFilter !== "all" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
-        >
-          <Filter size={16} className="mr-2" />
-          Por Obra{obraFilter !== "all" ? `: ${obraFilter}` : ""}
-        </button>
+      <div className="flex gap-3 overflow-x-auto mb-4 items-center">
+        <div className="relative" ref={obraDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setObraDropdownOpen((s) => !s)}
+            className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${obraFilter !== "all" || obraSortMode !== "none" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
+          >
+            <Filter size={16} className="mr-2" />
+            Por Obra
+            <ChevronDown size={14} className="ml-2" />
+          </button>
+
+          {obraDropdownOpen && (
+            <div className="absolute z-10 mt-2 right-0 w-64 bg-white shadow-xl rounded-xl border">
+              <div className="p-3 border-b">
+                <p className="text-xs font-semibold mb-2">Ordem Alfabética</p>
+                <button
+                  type="button"
+                  onClick={() => { setObraSortMode("az"); setObraFilter("all"); setObraDropdownOpen(false); }}
+                  className="w-full text-left p-3 hover:bg-gray-50"
+                >
+                  A-Z
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setObraSortMode("za"); setObraFilter("all"); setObraDropdownOpen(false); }}
+                  className="w-full text-left p-3 hover:bg-gray-50"
+                >
+                  Z-A
+                </button>
+              </div>
+
+              <div className="p-3 border-b">
+                <p className="text-xs font-semibold mb-2">Frequência de Obra</p>
+                <button
+                  type="button"
+                  onClick={() => { setObraSortMode("most"); setObraFilter("all"); setObraDropdownOpen(false); }}
+                  className="w-full text-left p-3 hover:bg-gray-50"
+                >
+                  Mais itens (Obra)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setObraSortMode("least"); setObraFilter("all"); setObraDropdownOpen(false); }}
+                  className="w-full text-left p-3 hover:bg-gray-50"
+                >
+                  Menos itens (Obra)
+                </button>
+              </div>
+
+              <div className="p-3">
+                <p className="text-xs font-semibold mb-2">Selecionar Obra</p>
+                <button
+                  type="button"
+                  onClick={() => { setObraFilter("all"); setObraSortMode("none"); setObraDropdownOpen(false); }}
+                  className="w-full text-left p-3 hover:bg-gray-50"
+                >
+                  Todos
+                </button>
+                {uniqueObras.map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    onClick={() => { setObraFilter(o); setObraSortMode("none"); setObraDropdownOpen(false); }}
+                    className="w-full text-left p-3 hover:bg-gray-50"
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         <button
           type="button"
