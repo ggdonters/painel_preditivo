@@ -5,6 +5,8 @@ import {
   AlertTriangle,
   DollarSign,
   ShoppingCart,
+  Filter,
+  ArrowDownUp,
 } from "lucide-react";
 
 type StatCardProps = {
@@ -92,7 +94,7 @@ export default function Page() {
     },
   ];
 
-  const rows: AlertRow[] = [
+  const initialRows: AlertRow[] = [
     {
       id: "r1",
       item: "Luva de Raspa Cano Curto",
@@ -122,11 +124,78 @@ export default function Page() {
     },
   ];
 
+  // Filters and sorting state
+  const [displayedRows, setDisplayedRows] = React.useState<AlertRow[]>(initialRows);
+  const [obraFilter, setObraFilter] = React.useState<string>("all");
+  const [activeSort, setActiveSort] = React.useState<"none" | "risk" | "urgent">("none");
+
+  const obraOptions = ["all", "Residencial Altos", "Torre Norte"];
+
+  function parseDays(risco: string) {
+    const m = risco.match(/(\d+)/);
+    return m ? parseInt(m[1], 10) : Infinity;
+  }
+
+  function applyFilters() {
+    let result = [...initialRows];
+
+    if (obraFilter !== "all") {
+      result = result.filter((r) => r.obra === obraFilter);
+    }
+
+    if (activeSort === "risk") {
+      result.sort((a, b) => b.prob - a.prob);
+    } else if (activeSort === "urgent") {
+      result.sort((a, b) => parseDays(a.risco) - parseDays(b.risco));
+    }
+
+    setDisplayedRows(result);
+  }
+
+  React.useEffect(() => {
+    applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [obraFilter, activeSort]);
+
   return (
     <main className="min-h-screen bg-gray-50 p-6">
   <h1 className="text-xl sm:text-2xl font-semibold leading-relaxed text-gray-800 mb-6">Painel Preditivo de Risco Operacional</h1>
 
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      {/* Filter bar */}
+      <div className="flex gap-3 overflow-x-auto mb-4">
+        <button
+          type="button"
+          onClick={() => setObraFilter((prev) => {
+            const idx = obraOptions.indexOf(prev);
+            const next = obraOptions[(idx + 1) % obraOptions.length];
+            return next;
+          })}
+          className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${obraFilter !== "all" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
+        >
+          <Filter size={16} className="mr-2" />
+          Por Obra{obraFilter !== "all" ? `: ${obraFilter}` : ""}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSort((prev) => (prev === "risk" ? "none" : "risk"))}
+          className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${activeSort === "risk" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
+        >
+          <ArrowDownUp size={16} className="mr-2" />
+          Maior Risco
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSort((prev) => (prev === "urgent" ? "none" : "urgent"))}
+          className={`flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${activeSort === "urgent" ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200"}`}
+        >
+          <ArrowDownUp size={16} className="mr-2" />
+          Mais Urgente
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         {stats.map((s) => (
           <StatCard key={s.id} {...s} />
         ))}
@@ -139,7 +208,7 @@ export default function Page() {
 
         {/* Mobile: lista de cards (mobile-first). Desktop (md+) mostra a tabela */}
         <div className="md:hidden space-y-6">
-          {rows.map((r) => (
+          {displayedRows.map((r) => (
             <div key={r.id} className="bg-white rounded-2xl shadow-sm border p-8">
               <div className="flex items-start justify-between">
                 <div className="pr-4">
@@ -178,7 +247,7 @@ export default function Page() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {displayedRows.map((r) => (
                 <React.Fragment key={r.id}>
                   <AlertRowItem row={r} />
                 </React.Fragment>
